@@ -1,0 +1,10 @@
+*/**/__pycache__
+chromedriver
+*.jar
+sikulix4python_example.py
+randomone.py
+*.png
+*.json
+*.log
+*/**/*.log
+config.txt

@@ -1,0 +1,1 @@
+from .ritetagpy import RitetagPy
