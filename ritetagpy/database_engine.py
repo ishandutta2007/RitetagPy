@@ -7,17 +7,25 @@ SELECT_FROM_PROFILE_WHERE_NAME = "SELECT * FROM profiles WHERE name = :name"
 
 INSERT_INTO_PROFILE = "INSERT INTO profiles (name) VALUES (?)"
 
+SQL_CREATE_PROFILE_TABLE = """
+    CREATE TABLE IF NOT EXISTS `profiles` (
+        `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+        `name` TEXT NOT NULL);"""
+
 SQL_CREATE_TERM_COLOR_TABLE = """
     CREATE TABLE IF NOT EXISTS `termColor` (
         `term` TEXT NOT NULL,
-        `col` TINYINT UNSIGNED NOT NULL);"""
+        `col` TINYINT UNSIGNED NOT NULL,
+        `is_banned` TINYINT UNSIGNED NOT NULL,
+        `modified` DATETIME NOT NULL);"""
+
 
 def get_database(Settings, make=False):
     address = Settings.database_location
     logger = Settings.logger
     credentials = Settings.profile
 
-    id, name = credentials["id"], credentials['name']
+    id, name = credentials["id"], credentials["name"]
     address = validate_database_address(Settings)
 
     if not os.path.isfile(address) or make:
@@ -35,28 +43,35 @@ def create_database(address, logger, name):
             connection.row_factory = sqlite3.Row
             cursor = connection.cursor()
 
-            create_tables(cursor, ["termColor"])
+            create_tables(cursor, ["profiles", "termColor"])
 
             connection.commit()
 
     except Exception as exc:
         logger.warning(
-            "Wah! Error occurred while getting a DB for '{}':\n\t{}"
-            .format(name, str(exc).encode("utf-8")))
+            "Wah! Error occurred while getting a DB for '{}':\n\t{}".format(
+                name, str(exc).encode("utf-8")
+            )
+        )
 
     finally:
         if connection:
             # close the open connection
             connection.close()
 
+
 def create_tables(cursor, tables):
+    if "profiles" in tables:
+        cursor.execute(SQL_CREATE_PROFILE_TABLE)
     if "termColor" in tables:
         cursor.execute(SQL_CREATE_TERM_COLOR_TABLE)
+
 
 def verify_database_directories(address):
     db_dir = os.path.dirname(address)
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
+
 
 def validate_database_address(Settings):
     address = Settings.database_location
@@ -67,6 +82,7 @@ def validate_database_address(Settings):
         Settings.database_location = address
     verify_database_directories(address)
     return address
+
 
 def get_profile(name, address, logger, Settings):
     try:
@@ -83,8 +99,10 @@ def get_profile(name, address, logger, Settings):
     except Exception as exc:
         traceback.print_exc()
         logger.error(
-            "Heeh! Error occurred while getting a DB profile for '{}':\n\t{}"
-            .format(name, str(exc).encode("utf-8")))
+            "Heeh! Error occurred while getting a DB profile for '{}':\n\t{}".format(
+                name, str(exc).encode("utf-8")
+            )
+        )
     finally:
         if conn:
             # close the open connection

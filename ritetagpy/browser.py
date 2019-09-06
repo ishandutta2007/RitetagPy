@@ -17,10 +17,9 @@ from .util import check_authorization
 from .util import web_address_navigator
 
 
-def set_selenium_remote_session(use_firefox,
-                                logger,
-                                selenium_url='',
-                                selenium_driver=None):
+def set_selenium_remote_session(
+    use_firefox, logger, selenium_url="", selenium_driver=None
+):
     """
     Starts remote session for a selenium server.
     Creates a new selenium driver instance for remote session or uses provided
@@ -34,41 +33,40 @@ def set_selenium_remote_session(use_firefox,
     if selenium_driver:
         browser = selenium_driver  # convert_selenium_browser(selenium_driver)
     else:
-        desired_caps = DesiredCapabilities.FIREFOX if use_firefox else DesiredCapabilities.CHROME
+        desired_caps = (
+            DesiredCapabilities.FIREFOX if use_firefox else DesiredCapabilities.CHROME
+        )
         browser = get_remote_browser(
-            command_executor=selenium_url,
-            desired_capabilities=desired_caps
+            command_executor=selenium_url, desired_capabilities=desired_caps
         )
 
     message = "Session started!"
-    highlight_print('browser', message, "initialization", "info", logger)
-    print('')
+    highlight_print("browser", message, "initialization", "info", logger)
+    print("")
 
     return browser
 
 
-def proxy_authentication(browser,
-                         logger,
-                         proxy_username,
-                         proxy_ritetag_password):
+def proxy_authentication(browser, logger, proxy_username, proxy_ritetag_password):
     """ Authenticate proxy using popup alert window """
     try:
         # sleep(1) is enough, sleep(2) is to make sure we
         # give time to the popup windows
         sleep(2)
         alert_popup = browser.switch_to_alert()
-        alert_popup.send_keys('{username}{tab}{ritetag_password}{tab}'
-                              .format(username=proxy_username,
-                                      tab=Keys.TAB,
-                                      ritetag_password=proxy_ritetag_password))
+        alert_popup.send_keys(
+            "{username}{tab}{ritetag_password}{tab}".format(
+                username=proxy_username,
+                tab=Keys.TAB,
+                ritetag_password=proxy_ritetag_password,
+            )
+        )
         alert_popup.accept()
     except Exception:
-        logger.warn('Unable to proxy authenticate')
+        logger.warn("Unable to proxy authenticate")
 
 
-def close_browser(browser,
-                  threaded_session,
-                  logger):
+def close_browser(browser, threaded_session, logger):
     with interruption_handler(threaded=threaded_session):
         # delete cookies
         try:
@@ -77,8 +75,8 @@ def close_browser(browser,
             if isinstance(exc, WebDriverException):
                 logger.exception(
                     "Error occurred while deleting cookies "
-                    "from web browser!\n\t{}"
-                    .format(str(exc).encode("utf-8")))
+                    "from web browser!\n\t{}".format(str(exc).encode("utf-8"))
+                )
 
         # close web browser
         try:
@@ -87,8 +85,8 @@ def close_browser(browser,
             if isinstance(exc, WebDriverException):
                 logger.exception(
                     "Error occurred while "
-                    "closing web browser!\n\t{}"
-                    .format(str(exc).encode("utf-8")))
+                    "closing web browser!\n\t{}".format(str(exc).encode("utf-8"))
+                )
 
 
 def retry(max_retry_count=3, start_page=None):
@@ -118,11 +116,11 @@ def retry(max_retry_count=3, start_page=None):
                     break
 
             if not browser:
-                print('not able to find browser in parameters!')
+                print("not able to find browser in parameters!")
                 return org_func(*args, **kwargs)
 
             if max_retry_count == 0:
-                print('max retry count is set to 0, this function is useless right now')
+                print("max retry count is set to 0, this function is useless right now")
                 return org_func(*args, **kwargs)
 
             # get current page if none is given
@@ -149,26 +147,27 @@ def retry(max_retry_count=3, start_page=None):
                     browser.get(start_page)
 
             return rv
+
         return wrapper
+
     return real_decorator
 
 
 class custom_browser(Remote):
-    '''Custom browser instance for manupulation later on'''
+    """Custom browser instance for manupulation later on"""
 
     def find_element_by_xpath(self, *args, **kwargs):
-        '''example usage of hooking into built in functions'''
+        """example usage of hooking into built in functions"""
         rv = super(custom_browser, self).find_element_by_xpath(*args, **kwargs)
         return rv
 
     def wait_for_valid_connection(self, username, logger):
         counter = 0
         while True and counter < 10:
-            sirens_wailing, emergency_state = emergency_exit(
-                self, username, logger)
-            if sirens_wailing and emergency_state == 'not connected':
-                print('brNo1')
-                logger.warning('there is no valid connection')
+            sirens_wailing, emergency_state = emergency_exit(self, username, logger)
+            if sirens_wailing and emergency_state == "not connected":
+                print("brNo1")
+                logger.warning("there is no valid connection")
                 counter += 1
                 sleep(60)
             else:
@@ -179,14 +178,13 @@ class custom_browser(Remote):
         current_url = get_current_url(self)
 
         # stuck on invalid auth
-        auth_method = 'activity counts'
+        auth_method = "activity counts"
         counter = 0
         while True and counter < 10:
-            login_state = check_authorization(
-                self, username, auth_method, logger)
+            login_state = check_authorization(self, username, auth_method, logger)
             if login_state is False:
-                print('brNo2')
-                logger.warning('not logged in')
+                print("brNo2")
+                logger.warning("not logged in")
                 counter += 1
                 sleep(60)
             else:
@@ -198,8 +196,8 @@ class custom_browser(Remote):
 
 def get_remote_browser(command_executor, desired_capabilities):
     browser = webdriver.Remote(
-        command_executor=command_executor,
-        desired_capabilities=desired_capabilities)
+        command_executor=command_executor, desired_capabilities=desired_capabilities
+    )
 
     return browser  # convert_selenium_browser(browser)
 
