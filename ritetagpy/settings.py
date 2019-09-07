@@ -71,4 +71,4 @@ class Settings:
 
     WORKSPACE = {"name": "RitetagPy", "path": environmental_variables.get("HOME")}
 
-    DATABASE_LOCATION = localize_path("RitetagPy", "db", "facebookpy.db")
+    DATABASE_LOCATION = localize_path("RitetagPy", "db", "ritetagpy.db")
