@@ -14,7 +14,7 @@ google-api-python-client == 1.7.9
 google-api-python-client-uritemplate == 1.4.2
 
 # ritetagpy/fetch_from_mail.py: 1
-httplib2 == 0.13.0
+httplib2 == 0.18.0
 
 # ritetagpy/file_manager.py: 224
 instapy_chromedriver == 2.44
